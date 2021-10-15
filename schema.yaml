@@ -1,0 +1,191 @@
+# Copyright (c) 2019-2021 Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+# 
+
+title: "OCI RM Compute Template"
+description: "Basic Compute creation using existing VCN"
+schemaVersion: 1.1.0
+version: "20211011"
+
+source:
+  type: testexample
+
+locale: "en"
+variableGroups:
+  - title: "Basic Hidden"
+    visible: false
+    variables:
+      - tenancy_ocid
+      - region
+      - use_existing_vcn
+# General Network 
+  - title: "Compute Network"
+    variables:
+      - compartment_of_vcns
+      - compartment_specific_vcn
+# General Compute
+  - title: "Compute Instance Details"
+    variables:
+      - compute_compartment
+      - demo_compute_instance_display_name
+      - demo_compute_instance_shape
+      - demo_operating_system
+      - demo_operating_system_version
+      - public_ssh_key        
+# General Compute Network
+  - title: "Compute Instance Network Details"
+    variables:      
+      - demo_compute_instance_vnic_display_name
+      - demo_compute_instance_hostname_dns_label
+##      - subnet_compartment
+      - selected_subnet
+      - demo_compute_add_public_ip
+    visible: true      
+
+# Miscelleanous
+  - title: "Miscellaneous"
+    variables:
+      - resource_tags
+    visible: true
+
+variables:
+
+  tenancy_ocid:
+    type: string
+    title: "Tenancy ID"
+    description: "The Oracle Cloud Identifier (OCID) for your tenancy"
+    required: true
+
+  region:
+    type: oci:identity:region:name
+    title: Region
+    description: "The region in which to create all resources"
+    required: true
+
+
+  compute_compartment:
+    type: oci:identity:compartment:id
+    required: true
+    title: "Compartment"
+    description: "Select the compartment for the compute."
+
+
+  compartment_of_vcns:
+    type: oci:identity:compartment:id
+    required: true
+    title: "Compartment"
+    description: "Select the compartment of the VCN to use."
+
+
+  compartment_specific_vcn:
+    type: oci:core:vcn:id
+    required: true
+    title: "Existing VCN"
+    description: "Choose a VNC from the selected compartment."
+
+    dependsOn:
+      compartmentId: ${compartment_of_vcns}
+    visible:
+      or:
+        - ${use_existing_vcn}
+        - and:
+          - and:
+            - true
+            - true
+          - not:
+            - false
+
+  demo_compute_instance_display_name:
+    type: string
+    title: "DEMO UI Compute Instance Name"
+    description: "Provide a descriptive name"
+    required: true
+
+  demo_compute_instance_shape:
+    type: string
+    title: "DEMO UI Compute Instance Shape"
+    description: "Provide a descriptive name"
+    required: true
+
+  demo_operating_system:
+    type: string
+    title: "DEMO UI Compute Instance OS"
+    description: "Provide a descriptive name"
+    required: true    
+
+  demo_operating_system_version:
+    type: string
+    title: "DEMO UI Compute Instance OS Version"
+    description: "Provide a descriptive name"
+    required: true  
+
+
+  demo_compute_instance_vnic_display_name:
+    type: string
+    title: "DEMO UI Compute Instance VNIC Name"
+    description: "Provide a descriptive name"
+    required: true
+
+  demo_compute_instance_hostname_dns_label:
+    type: string
+    title: "DEMO UI Compute Instance hostname DNS label"
+    description: "Provide a descriptive name"
+    required: true
+
+  demo_compute_add_public_ip:
+    type: boolean
+    title: "Assign public IP to DEMO UI Compute Instance"
+    description: "Should this compute instance have a public IP?"
+    required: true
+
+#  subnet_compartment:
+#    type: oci:identity:compartment:id
+#    dependsOn:
+#      compartmentId: ${compartment_specific_vcn}
+#      vcnId: ${compartment_specific_vcn}
+#    default: compartment_specific_vcn    
+#    visible: false
+#    required: true
+
+
+  selected_subnet:
+    type: oci:core:subnet:id
+    title: "DEMO UI Compute Instance Subnet"
+    description: "Choose the appropriate subnet"    
+    dependsOn:
+      compartmentId: ${compartment_of_vcns}
+      vcnId: ${compartment_specific_vcn}
+    visible: ${use_existing_vcn}
+    required: true
+
+  use_existing_vcn:
+    type: boolean
+    default: true
+
+  public_ssh_key:
+    type: oci:core:ssh:publickey
+    title: "SSH Public Key"
+    description: "The public SSH key for the key-pair that you want to use, if you wish to login to the instances over SSH."
+    additionalProps:
+      allowMultiple: true
+    pattern: "((^(ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+\/]+[=]{0,3})( [^,]*)?)(,((ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+\/]+[=]{0,3})( [^,]*)?)*$"
+
+  resource_tags:
+    type: oci:identity:tag:value
+    title: Resource Tags
+    description: "Tag value for resource created"
+    required: true
+    dependsOn:
+      compartmentId: ${compartment_of_vcns}
+
+outputGroups:
+  - title: "Stack Output Summary"
+    outputs:
+      - resource_tags
+
+outputs:
+  resource_tags:
+    type: string
+    title: "Resource Tags Assigned"
+    displayText: "Freeform and\\or defined"
+    visible: true
