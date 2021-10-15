@@ -1,6 +1,8 @@
 ### Common ###
 
 
+### MDC - 18 Oct 2021 to fix shape
+
 variable "tenancy_ocid" {}
 variable "region" {}
 
@@ -45,7 +47,7 @@ variable "demo_compute_instance_display_name" {
 
 variable "demo_compute_instance_shape" {
   
-##  default = "VM.Standard2.1"
+  default = "VM.Standard2.1"
 
   default = "VM.Standard2.2"
 }
