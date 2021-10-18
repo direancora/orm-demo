@@ -47,7 +47,7 @@ variable "demo_compute_instance_display_name" {
 
 variable "demo_compute_instance_shape" {
   
-  default = "VM.Standard2.1"
+##  default = "VM.Standard2.1"
 
   default = "VM.Standard2.2"
 }
